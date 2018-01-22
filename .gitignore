@@ -103,3 +103,8 @@ ENV/
 
 # macOS
 .DS_Store
+
+
+# config file
+config.py
+
