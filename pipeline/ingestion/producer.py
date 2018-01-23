@@ -42,8 +42,8 @@ def send_request(producer):
         producer.send(TOPIC, json.dumps(entry))
 
 
-def periodic_request(time_period=10, producer):
-    if not isinstance(time_perid, int):
+def periodic_request(producer, time_period=10):
+    if not isinstance(time_period, int):
 	raise ValueError('time_period must be an integer.')
 
     while True:
@@ -54,9 +54,9 @@ def periodic_request(time_period=10, producer):
 
 def main(argv=sys.argv):
     producer = kafka.KafkaProducer(bootstrap_servers=PUBLIC_DNS)
-    periodic_request(TIME_PERIOD, producer)
+    periodic_request(producer, TIME_PERIOD)
 
 
 
-if __main__ = '__main__':
+if __name__ == '__main__':
     main()
