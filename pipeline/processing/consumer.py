@@ -104,8 +104,8 @@ def main(argv=sys.argv):
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
-    kafkaStream.map(lambda (time, records): (json.loads(records)) \
-                .saveToCassandra(KEYSPACE, TABLE_NAME)
+    kafkaStream.map(lambda (time, records): json.loads(records)) \
+                .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
 
 
     ssc.start()
