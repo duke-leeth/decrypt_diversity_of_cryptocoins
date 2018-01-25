@@ -6,6 +6,7 @@ import sys
 import time
 import json
 import threading
+import pyspark_cassandra
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
@@ -99,11 +100,12 @@ def main(argv=sys.argv):
 
     session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
     create_table(session, TABLE_NAME)
-    query_cassandra = prepare_insertion(session, TABLE_NAME)
+    # query_cassandra = prepare_insertion(session, TABLE_NAME)
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
-    kafkaStream.map(lambda x: (x[1], session, query_cassandra)).map(save_to_cassandra)
+    kafkaStream.map(lambda (time, records): (json.loads(records)) \
+                .saveToCassandra(KEYSPACE, TABLE_NAME)
 
 
     ssc.start()

@@ -14,9 +14,12 @@ TOPIC = 'CoinsInfo'
 API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 TIME_PERIOD = 10
 
-
 def cast_to_float(var):
-    return 0.0 if not isinstance(var, float) else float(var)
+    try:
+        var = float(var)
+        return var
+    except Exception as ex:
+        return 0.0
 
 
 def send_request(producer):

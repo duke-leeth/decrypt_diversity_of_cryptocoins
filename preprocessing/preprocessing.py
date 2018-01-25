@@ -65,7 +65,7 @@ def send_request(session, table_name=TABLE_NAME):
 
     for entry in jsdata:
         session.execute(query_cassandra, \
-                    （entry['id'], entry['name'], entry['symbol'], entry['rank'])）
+                    (entry['id'], entry['name'], entry['symbol'], entry['rank']))
 
 
 def main(argv=sys.argv):
