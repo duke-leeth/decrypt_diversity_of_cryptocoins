@@ -13,7 +13,7 @@ KEYSPACE = 'cryptcoin'
 TABLE_NAME = 'BasicInfo'
 
 
-def set_keyspace(session, keyspace='cryptcoin'):
+def set_keyspace(session, keyspace=KEYSPACE):
     replication_setting = \
         '{\'class\' : \'SimpleStrategy\', \'replication_factor\' : 3}'
     session.execute( \
@@ -26,7 +26,7 @@ def set_keyspace(session, keyspace='cryptcoin'):
     session.set_keyspace(keyspace)
 
 
-def create_table(session, table_name = 'BasicInfo'):
+def create_table(session, table_name=TABLE_NAME):
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
             id text,
@@ -40,7 +40,7 @@ def create_table(session, table_name = 'BasicInfo'):
     session.execute(table_creation_preparation)
 
 
-def prepare_insertion(session, table_name = 'BasicInfo'):
+def prepare_insertion(session, table_name=TABLE_NAME):
     query = ("""
         INSERT INTO {Table_Name} (
             id,
@@ -52,12 +52,7 @@ def prepare_insertion(session, table_name = 'BasicInfo'):
     return session.prepare(query)
 
 
-def insert_to_db(session, table_name = 'BasicInfo', id='', name='', symbol='', rank=''):
-    query_cassandra = prepare_insertion(session, table_name = 'BasicInfo')
-    session.execute(query_cassandra, (id, name, symbol, rank))
-
-
-def send_request(session, table_name = 'BasicInfo'):
+def send_request(session, table_name=TABLE_NAME):
     while True:
         try:
             req = requests.get(API_URL)
@@ -66,9 +61,11 @@ def send_request(session, table_name = 'BasicInfo'):
         except Exception as ex:
             pass
 
+    query_cassandra = prepare_insertion(session, table_name)
+
     for entry in jsdata:
-        insert_to_db(session, table_name, \
-                    entry['id'], entry['name'], entry['symbol'], entry['rank'])
+        session.execute(query_cassandra, \
+                    （entry['id'], entry['name'], entry['symbol'], entry['rank'])）
 
 
 def main(argv=sys.argv):
