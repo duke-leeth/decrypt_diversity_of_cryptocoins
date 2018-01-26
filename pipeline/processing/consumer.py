@@ -76,21 +76,22 @@ def prepare_insertion(session, table_name=TABLE_NAME):
     return session.prepare(query)
 
 
-def save_to_cassandra(rdd, session, query_cassandra):
-    jsdata = json.loads(rdd)
-    session.execute(query_cassandra, (\
-            jsdata['id'], \
-            jsdata['time'], \
-            jsdata['price_usd'], \
-            jsdata['price_btc'], \
-            jsdata['24h_volume_usd'], \
-            jsdata['market_cap_usd'], \
-            jsdata['available_supply'], \
-            jsdata['total_supply'], \
-            jsdata['max_supply'], \
-            jsdata['percent_change_1h'], \
-            jsdata['percent_change_24h'], \
-            jsdata['percent_change_7d'] ))
+def save_to_cassandra(records, session, query_cassandra):
+    for jsobject in records.collect():
+        jsdata = json.loads(jsobject)
+        session.execute(query_cassandra, (\
+                jsdata['id'], \
+                jsdata['time'], \
+                jsdata['price_usd'], \
+                jsdata['price_btc'], \
+                jsdata['24h_volume_usd'], \
+                jsdata['market_cap_usd'], \
+                jsdata['available_supply'], \
+                jsdata['total_supply'], \
+                jsdata['max_supply'], \
+                jsdata['percent_change_1h'], \
+                jsdata['percent_change_24h'], \
+                jsdata['percent_change_7d'] ))
 
 
 def main(argv=sys.argv):
@@ -100,15 +101,18 @@ def main(argv=sys.argv):
 
     session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
     create_table(session, TABLE_NAME)
-    # query_cassandra = prepare_insertion(session, TABLE_NAME)
+    query_cassandra = prepare_insertion(session, TABLE_NAME)
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
-    kafkaStream.map(lambda (time, records): json.loads(records)) \
-                .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
+    kafkaStream.map(lambda (time, records): (records, session, query_cassandra)) \
+                .map(save_to_cassandra).pprint()
+    # kafkaStream.map(lambda (time, records): json.loads(records)) \
+    #             .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
 
 
     ssc.start()
+    ssc.awaitTermination()
 
 
 if __name__ == "__main__":
