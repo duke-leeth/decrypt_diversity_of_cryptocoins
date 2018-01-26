@@ -94,6 +94,17 @@ def save_to_cassandra(records, session, query_cassandra):
                 jsdata['percent_change_7d'] ))
 
 
+def process(time, rdd):
+
+    # Get the singleton instance of SparkSession
+    spark = getSparkSessionInstance(rdd.context.getConf())
+
+    # Convert RDD[String] to RDD[Row] to DataFrame
+    rowRdd = rdd.map(lambda jsobject: json.loads(jsobject))
+    df = spark.createDataFrame(rowRdd)
+    df.show()
+
+
 def main(argv=sys.argv):
     sc = SparkContext(appName='Processing_CoinsInfo')
     sc.setLogLevel("WARN")
@@ -105,10 +116,8 @@ def main(argv=sys.argv):
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
+    kafkaStream.foreachRDD(process)
 
-
-    df = sqlContext.read.json( kafkaStream.map(lambda (time, records): records) )
-    df.show()
 
 
     # kafkaStream.map(lambda (time, records): json.loads(records)) \
