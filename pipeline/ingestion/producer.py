@@ -33,7 +33,7 @@ def send_request(producer):
         entry['time'] = int(cast_to_float(entry['last_updated']) * 1000)
         entry['price_usd'] = cast_to_float(entry['price_usd'])
         entry['price_btc'] = cast_to_float(entry['price_btc'])
-        entry['24h_volume_usd'] = cast_to_float(entry['24h_volume_usd'])
+        entry['volume_usd_24h'] = cast_to_float(entry['24h_volume_usd'])
         entry['market_cap_usd'] = cast_to_float(entry['market_cap_usd'])
         entry['available_supply'] = cast_to_float(entry['available_supply'])
         entry['total_supply'] = cast_to_float(entry['total_supply'])
