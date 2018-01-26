@@ -6,7 +6,6 @@ import sys
 import time
 import json
 import threading
-import pyspark_cassandra
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.streaming import StreamingContext
@@ -94,20 +93,13 @@ def save_to_cassandra(records, session, query_cassandra):
                 jsdata['percent_change_7d'] ))
 
 
-def process(time, rdd):
 
-    # Get the singleton instance of SparkSession
-    spark = getSparkSessionInstance(rdd.context.getConf())
-
-    # Convert RDD[String] to RDD[Row] to DataFrame
-    rowRdd = rdd.map(lambda jsobject: json.loads(jsobject))
-    df = spark.createDataFrame(rowRdd)
-    df.show()
 
 
 def main(argv=sys.argv):
     sc = SparkContext(appName='Processing_CoinsInfo')
     sc.setLogLevel("WARN")
+    sqlContext = SQLContext(sc)
     ssc = StreamingContext(sc, BATCH_DURATION)
 
     session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
@@ -116,6 +108,21 @@ def main(argv=sys.argv):
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
+   
+        
+    def process(time, rdd):
+        # Convert RDD[String] to RDD[Row] to DataFrame
+               
+        ## Example for rdd: (None, <JSON Object>)
+        jsrdd = rdd.map(lambda x: x[1])
+        df = sqlContext.read.json(jsrdd, multiLine=True)
+        #df.select(df['id'], df['time'], df['price_usd']).show()
+        df.select('id').show() 
+        #df.show()
+
+
+
+
     kafkaStream.foreachRDD(process)
 
 
