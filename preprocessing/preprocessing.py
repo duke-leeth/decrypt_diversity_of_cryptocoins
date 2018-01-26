@@ -10,7 +10,7 @@ PUBLIC_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 
 KEYSPACE = 'cryptcoin'
-TABLE_NAME = 'BasicInfo'
+TABLE_NAME = 'basicinfo'
 
 
 def set_keyspace(session, keyspace=KEYSPACE):
@@ -32,7 +32,7 @@ def create_table(session, table_name=TABLE_NAME):
             id text,
             name text,
             symbol text,
-            rank text,
+            rank int,
             PRIMARY KEY (id),
         );
     """).format(Table_Name = table_name).translate(None, '\n')
@@ -65,7 +65,7 @@ def send_request(session, table_name=TABLE_NAME):
 
     for entry in jsdata:
         session.execute(query_cassandra, \
-                    (entry['id'], entry['name'], entry['symbol'], entry['rank']))
+                    (entry['id'], entry['name'], entry['symbol'], int(entry['rank'])))
 
 
 def main(argv=sys.argv):
