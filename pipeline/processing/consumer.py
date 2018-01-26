@@ -8,6 +8,7 @@ import json
 import threading
 import pyspark_cassandra
 from pyspark import SparkContext
+from pyspark.sql import SQLContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from cassandra.cluster import Cluster
@@ -75,7 +76,6 @@ def prepare_insertion(session, table_name=TABLE_NAME):
     """).format(Table_Name = table_name).translate(None, '\n')
     return session.prepare(query)
 
-
 def save_to_cassandra(records, session, query_cassandra):
     for jsobject in records.collect():
         jsdata = json.loads(jsobject)
@@ -105,8 +105,12 @@ def main(argv=sys.argv):
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
-    kafkaStream.map(lambda (time, records): (records, session, query_cassandra)) \
-                .map(save_to_cassandra).pprint()
+
+
+    df = sqlContext.read.json( kafkaStream.map(lambda (time, records): records) )
+    df.show()
+
+
     # kafkaStream.map(lambda (time, records): json.loads(records)) \
     #             .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
 
