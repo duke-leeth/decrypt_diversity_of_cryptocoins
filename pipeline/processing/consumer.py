@@ -8,6 +8,7 @@ import json
 import threading
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from cassandra.cluster import Cluster
@@ -16,7 +17,7 @@ import config
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 KEYSPACE = 'cryptcoin'
-TABLE_NAME = 'PriceInfo'
+TABLE_NAME = 'PriceInfo' 
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
 BATCH_DURATION = 10
@@ -25,6 +26,10 @@ GRIUP_ID = 'spark-streaming'
 TOPIC = 'CoinsInfo'
 NO_PARTITION = 10
 
+APP_NAME = 'processing'
+MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
+
+spark = SparkSession.builder.appName(APP_NAME).master(MASTER).getOrCreate()
 
 
 def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
@@ -97,14 +102,15 @@ def save_to_cassandra(records, session, query_cassandra):
 
 
 def main(argv=sys.argv):
-    sc = SparkContext(appName='Processing_CoinsInfo')
+    sc = spark.sparkContext
+
     sc.setLogLevel("WARN")
     sqlContext = SQLContext(sc)
     ssc = StreamingContext(sc, BATCH_DURATION)
 
-    session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
-    create_table(session, TABLE_NAME)
-    query_cassandra = prepare_insertion(session, TABLE_NAME)
+#    session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
+#    create_table(session, TABLE_NAME)
+#    query_cassandra = prepare_insertion(session, TABLE_NAME)
 
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
@@ -117,14 +123,25 @@ def main(argv=sys.argv):
         jsrdd = rdd.map(lambda x: x[1])
         df = sqlContext.read.json(jsrdd, multiLine=True)
         #df.select(df['id'], df['time'], df['price_usd']).show()
-        df.select('id').show() 
-        #df.show()
+        price_df = df.select('id', 'time', 'price_usd', 'price_btc', \
+			'24h_volume_usd', 'market_cap_usd', \
+			'available_supply', 'total_supply', \
+			'max_supply', 'percent_change_1h', \
+			'percent_change_24h', 'percent_change_7d') 
+       
+	price_df.write \
+		.format("org.apache.spark.sql.cassandra")\
+		.mode('append') \
+		.options(table=TABLE_NAME, keyspace=KEYSPACE)\
+		.save()        
 
 
 
-
-    kafkaStream.foreachRDD(process)
-
+    #kafkaStream.foreachRDD(process)
+    spark.read\
+	.format("org.apache.spark.sql.cassandra")\
+	.options(table="BasicInfo", keyspace='cryptcoin')\
+	.load().show()
 
 
     # kafkaStream.map(lambda (time, records): json.loads(records)) \
