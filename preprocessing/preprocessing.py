@@ -33,8 +33,8 @@ def create_table(session, table_name=TABLE_NAME):
             name text,
             symbol text,
             rank int,
-            PRIMARY KEY (id),
-        );
+            PRIMARY KEY ((id), rank),
+        ) WITH CLUSTERING ORDER BY (rank ASC);
     """).format(Table_Name = table_name).translate(None, '\n')
     table_creation_preparation = session.prepare(query)
     session.execute(table_creation_preparation)
