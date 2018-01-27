@@ -18,14 +18,14 @@ import config
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 KEYSPACE = 'cryptcoin'
-TABLE_NAME = 'priceinfo' 
+TABLE_NAME = 'priceinfo'
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
 BATCH_DURATION = 10
 
 GRIUP_ID = 'spark-streaming'
 TOPIC = 'CoinsInfo'
-NO_PARTITION = 10
+NO_PARTITION = 12
 
 APP_NAME = 'processing'
 MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
