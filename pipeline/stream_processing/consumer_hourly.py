@@ -18,7 +18,7 @@ import config
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 KEYSPACE = 'cryptcoin'
-TABLE_NAME = 'priceinfo'
+TABLE_NAME = 'priceinfohourly'
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
 BATCH_DURATION = 10
@@ -30,7 +30,8 @@ NO_PARTITION = 12
 APP_NAME = 'processing'
 MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
 
-
+WINDOW_LENGTH = 60*60
+SLIDE_INTERVAL = 60*60
 
 def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
     cluster = Cluster([cassandra_dns])
@@ -46,19 +47,37 @@ def create_table(session, table_name=TABLE_NAME):
             time timestamp,
             price_usd float,
             price_btc float,
-            volume_usd_24h float,
-            market_cap_usd float,
-            available_supply float,
-            total_supply float,
-            max_supply float,
-            percent_change_1h float,
-            percent_change_24h float,
-            percent_change_7d float,
             PRIMARY KEY ((id), time),
         ) WITH CLUSTERING ORDER BY (time DESC);
     """).format(Table_Name = table_name).translate(None, '\n')
     table_creation_preparation = session.prepare(query)
     session.execute(table_creation_preparation)
+
+
+def sum_and_count(entry):
+    return ( entry['id'], \
+             {'count': 1, \
+              'price_usd': entry['price_usd'], \
+              'price_btc': entry['price_btc']} )
+
+
+def addition(v1, v2):
+    return {'count': v1['count'] + v2['count'], \
+            'price_usd': v1['price_usd'] + v2['price_usd'], \
+            'price_btc': v1['price_btc'] + v2['price_btc'] }
+
+
+def subtraction(v1, v2):
+    return {'count': v1['count'] - v2['count'], \
+            'price_usd': v1['price_usd'] - v2['price_usd'], \
+            'price_btc': v1['price_btc'] - v2['price_btc'] }
+
+
+def average_price(key, value): \
+    return {'id': key, \
+            'time': int(time.time()*1000), \
+            'price_usd': value['price_usd']/value['count'], \
+            'price_btc': value['price_btc']/value['count'] }
 
 
 def main(argv=sys.argv):
@@ -74,7 +93,12 @@ def main(argv=sys.argv):
     create_table(session, TABLE_NAME)
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
-    kafkaStream.map(lambda (time, records): json.loads(records)) \
+    hourlyStream = kafkaStream.map(lambda (time, records): json.loads(records))\
+                                .map(sum_and_count)\
+                                .reduceByKeyAndWindow(addition, subtraction, \
+                                                    WINDOW_LENGTH, SLIDE_INTERVAL )
+
+    hourlyStream.map(average_price)\
                 .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
 
 
