@@ -21,7 +21,7 @@ session.set_keyspace(KEYSPACE)
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html", title = 'Home') 
+    return render_template("index.html", title = 'Home')
 
 
 @app.route('/email')
@@ -31,7 +31,7 @@ def email():
 
 @app.route('/api')
 def api():
-    query = "SELECT name, symbol, id FROM cryptcoin.basicinfo WHERE rank <= 10 ALLOW FILTERING;"    
+    query = "SELECT name, symbol, id FROM cryptcoin.basicinfo WHERE rank <= 10 ALLOW FILTERING;"
     response = session.execute(query)
     response_list = []
 
@@ -39,14 +39,15 @@ def api():
 
     for val in response:
         response_list.append(val)
+
     jsonresponse = [{"name": x.name, "symbol": x.symbol,"id": x.id} for x in response_list]
     return jsonify(jsonresponse)
 
 
 
-@app.route('/api/<coinid>/')
+@app.route('/api/id=<coinid>/')
 def get_price(coinid):
-    query = "SELECT id, time, price_usd, percent_change_1h FROM priceinfo WHERE id=%s"
+    query = "SELECT id, time, price_usd FROM priceinfo WHERE id=%s LIMIT 30"
     response = session.execute(query, parameters=[coinid])
     response_list = []
 

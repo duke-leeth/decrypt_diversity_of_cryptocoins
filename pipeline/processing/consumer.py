@@ -91,32 +91,6 @@ def create_table_hourly(session, table_name=TABLE_NAME_HOURLY):
     session.execute(table_creation_preparation)
 
 
-def create_table_corr(session, table_name=TABLE_NAME_CORR):
-    query = ("""
-        CREATE TABLE IF NOT EXISTS {Table_Name} (
-            id_a text,
-            id_b text,
-            time timestamp,
-            corr float,
-            PRIMARY KEY ((id_a, id_b), time),
-        ) WITH CLUSTERING ORDER BY (time DESC);
-    """).format(Table_Name = table_name).translate(None, '\n')
-    table_creation_preparation = session.prepare(query)
-    session.execute(table_creation_preparation)
-
-
-def prepare_insertion_corr(session, table_name=TABLE_NAME_CORR):
-    query = ("""
-        INSERT INTO {Table_Name} ( 
-            id_a,
-            id_b,
-            time,
-            corr
-        ) VALUES (?,?,?,?)
-    """).format(Table_Name = table_name).translate(None, '\n')
-    return session.prepare(query)
-
-
 def sum_and_count(entry):
     return ( entry['id'], \
              {'count': 1, \
@@ -143,55 +117,6 @@ def average_price((key, value)): \
             'price_btc': value['price_btc']/value['count'] }
 
 
-def list_append(v1, v2):
-    return v1 + v2
-
-
-def process_corr(dstream, session):
-    query_cassandra = prepare_insertion_corr(session, TABLE_NAME_CORR)
-    
-    def compute_correlation(rdd):
-        list_matrix = []
-        for i in range(NO_COINS):
-            list_matrix.append([])
-
-        info_list = []
-        try:
-            info_list = rdd.collect()
-        except Exception as ex:
-            pass
-
-        for (k, v) in info_list:
-            try:
-                list_matrix[ int( ID_DICT[k] ) - 1 ] = v
-            except Exception as ex:
-                pass
-
-        no_of_var = 250
-
-        corr_matrix = np.corrcoef( np.matrix(list_matrix[:no_of_var]) )
-        corr_matrix = np.nan_to_num( corr_matrix )
-        
-        print corr_matrix.shape
-        print corr_matrix[:3][:2]
-
-        curr_time = int(time.time()*1000)
-
-        for i in range(no_of_var):
-            for j in range(no_of_var):
-                session.execute(query_cassandra,\
-                    (INV_ID_DICT[i+1], \
-                     INV_ID_DICT[j+1], \
-                     curr_time, \
-                     corr_matrix[i][j]) )
-
-        return None
-
-
-    dstream.foreachRDD(compute_correlation)
-
-
-
 def main(argv=sys.argv):
 
     spark = SparkSession.builder.appName(APP_NAME).master(MASTER).getOrCreate()
@@ -206,29 +131,18 @@ def main(argv=sys.argv):
     session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
     create_table(session, TABLE_NAME)
     create_table_hourly(session, TABLE_NAME_HOURLY)
-    create_table_corr(session, TABLE_NAME_CORR)
+
 
     kafkaStream = KafkaUtils.createStream(ssc, ZK_DNS, GRIUP_ID, {TOPIC : NO_PARTITION})
     decodedStream = kafkaStream.map(lambda (time, records): json.loads(records))
-#    decodedStream.foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
+    decodedStream.foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME))
 
-#    hourlyStream = decodedStream\
-#                    .map(sum_and_count)\
-#                    .reduceByKeyAndWindow(addition, subtraction, WINDOW_LENGTH, SLIDE_INTERVAL )
+    hourlyStream = decodedStream\
+                   .map(sum_and_count)\
+                   .reduceByKeyAndWindow(addition, subtraction, WINDOW_LENGTH, SLIDE_INTERVAL )
 
-#    hourlyStream.map(average_price)\
-#                .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_HOURLY))
-
-    
-
-    culStream = decodedStream\
-                    .map(lambda entry: (entry['id'], [ entry['price_usd'] ]) ) \
-                    .reduceByKeyAndWindow(list_append, WINDOW_LENGTH, SLIDE_INTERVAL)
-    
-    process_corr(culStream, session)
-#    culStream.foreachRDD(compute_correlation)
-
-
+    hourlyStream.map(average_price)\
+               .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_HOURLY))
 
 
     ssc.start()
