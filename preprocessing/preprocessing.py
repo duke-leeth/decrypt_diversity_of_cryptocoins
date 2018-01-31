@@ -12,6 +12,8 @@ API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 KEYSPACE = 'cryptcoin'
 TABLE_NAME = 'basicinfo'
 
+ID_LIST_FILE = '../processing/id_list.py'
+
 
 def set_keyspace(session, keyspace=KEYSPACE):
     replication_setting = \
@@ -63,9 +65,18 @@ def send_request(session, table_name=TABLE_NAME):
 
     query_cassandra = prepare_insertion(session, table_name)
 
+    id_list = []
+
     for entry in jsdata:
+        id_list.append(entry['id'])
+
         session.execute(query_cassandra, \
                     (entry['id'], entry['name'], entry['symbol'], int(entry['rank'])))
+
+    with open(ID_LIST_FILE, 'w') as fout:
+        fout.write('ID_LIST = ')
+        fout.write(str(id_list))
+
 
 
 def main(argv=sys.argv):

@@ -13,7 +13,9 @@ from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from cassandra.cluster import Cluster
+
 import config
+import id_list
 
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
@@ -33,8 +35,12 @@ MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
 PATH_CHECKPOINT = config.PROCESSING_CONFIG['HDFS']
 
 
-WINDOW_LENGTH = 0.5*60
-SLIDE_INTERVAL = 0.5*60
+WINDOW_LENGTH = 1*60
+SLIDE_INTERVAL = 1*60
+
+
+ID_LIST = id_list.ID_LIST
+
 
 
 def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
@@ -88,11 +94,6 @@ def sum_and_count(entry):
 
 
 def addition(v1, v2):
-
-    print 'v1:', v1
-    print 'v2:', v2
-
-
     return {'count': v1['count'] + v2['count'], \
             'price_usd': v1['price_usd'] + v2['price_usd'], \
             'price_btc': v1['price_btc'] + v2['price_btc'] }
@@ -109,6 +110,8 @@ def average_price((key, value)): \
             'time': int(time.time()*1000), \
             'price_usd': value['price_usd']/value['count'], \
             'price_btc': value['price_btc']/value['count'] }
+
+
 
 
 def main(argv=sys.argv):
@@ -137,7 +140,7 @@ def main(argv=sys.argv):
     hourlyStream.map(average_price)\
                 .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_HOURLY))
 
-    
+
 
 
     ssc.start()
