@@ -12,7 +12,7 @@ API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 KEYSPACE = 'cryptcoin'
 TABLE_NAME = 'basicinfo'
 
-ID_LIST_FILE = '../processing/id_list.py'
+ID_LIST_FILE = 'id_dict.py'
 
 
 def set_keyspace(session, keyspace=KEYSPACE):
@@ -65,17 +65,17 @@ def send_request(session, table_name=TABLE_NAME):
 
     query_cassandra = prepare_insertion(session, table_name)
 
-    id_list = []
+    id_dict = {} 
 
     for entry in jsdata:
-        id_list.append(entry['id'])
+        id_dict[ entry['id'] ] = entry['rank']
 
         session.execute(query_cassandra, \
                     (entry['id'], entry['name'], entry['symbol'], int(entry['rank'])))
 
     with open(ID_LIST_FILE, 'w') as fout:
-        fout.write('ID_LIST = ')
-        fout.write(str(id_list))
+        fout.write('ID_DICT = ')
+        fout.write(str(id_dict).encode("UTF-8"))
 
 
 
