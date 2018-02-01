@@ -108,4 +108,6 @@ ENV/
 # config file
 config.py
 
-id_list.py
+id_dict.py
+id_dict.py
+batch_log.txt

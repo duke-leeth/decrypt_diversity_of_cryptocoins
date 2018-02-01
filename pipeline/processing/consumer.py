@@ -7,7 +7,6 @@ import time
 import json
 import threading
 import pyspark_cassandra
-import numpy as np
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
@@ -23,7 +22,6 @@ CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 KEYSPACE = 'cryptcoin'
 TABLE_NAME = 'priceinfo'
 TABLE_NAME_HOURLY = 'priceinfohourly'
-TABLE_NAME_CORR = 'pricecorr'
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
 BATCH_DURATION = 10
@@ -37,15 +35,8 @@ MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
 PATH_CHECKPOINT = config.PROCESSING_CONFIG['HDFS']
 
 
-WINDOW_LENGTH = 5*60
-SLIDE_INTERVAL = 5*60
-
-
-ID_DICT = id_dict.ID_DICT
-NO_COINS = 1506
-
-INV_ID_DICT = {v: k for k, v in ID_DICT.iteritems()}
-
+WINDOW_LENGTH = 60*60
+SLIDE_INTERVAL = 60*60
 
 
 def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
