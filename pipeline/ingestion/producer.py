@@ -32,19 +32,23 @@ def send_request(producer):
         return None
 
     for entry in jsdata:
-        entry['time'] = int(cast_to_float(entry['last_updated']) * 1000)
-        entry['price_usd'] = cast_to_float(entry['price_usd'])
-        entry['price_btc'] = cast_to_float(entry['price_btc'])
-        entry['volume_usd_24h'] = cast_to_float(entry['24h_volume_usd'])
-        entry['market_cap_usd'] = cast_to_float(entry['market_cap_usd'])
-        entry['available_supply'] = cast_to_float(entry['available_supply'])
-        entry['total_supply'] = cast_to_float(entry['total_supply'])
-        entry['max_supply'] = cast_to_float(entry['max_supply'])
-        entry['percent_change_1h'] = cast_to_float(entry['percent_change_1h'])
-        entry['percent_change_24h'] = cast_to_float(entry['percent_change_24h'])
-        entry['percent_change_7d'] = cast_to_float(entry['percent_change_7d'])
+        time_transformed = int(cast_to_float(entry['last_updated']) * 1000)
+        if time_transformed<1000:
+             pass
+        else:
+            entry['time'] = time_transformed
+            entry['price_usd'] = cast_to_float(entry['price_usd'])
+            entry['price_btc'] = cast_to_float(entry['price_btc'])
+            entry['volume_usd_24h'] = cast_to_float(entry['24h_volume_usd'])
+            entry['market_cap_usd'] = cast_to_float(entry['market_cap_usd'])
+            entry['available_supply'] = cast_to_float(entry['available_supply'])
+            entry['total_supply'] = cast_to_float(entry['total_supply'])
+            entry['max_supply'] = cast_to_float(entry['max_supply'])
+            entry['percent_change_1h'] = cast_to_float(entry['percent_change_1h'])
+            entry['percent_change_24h'] = cast_to_float(entry['percent_change_24h'])
+            entry['percent_change_7d'] = cast_to_float(entry['percent_change_7d'])
 
-        producer.send(TOPIC, json.dumps(entry))
+            producer.send(TOPIC, json.dumps(entry))
 
 
 def periodic_request(producer, time_period=10):

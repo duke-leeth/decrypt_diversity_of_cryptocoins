@@ -30,7 +30,7 @@ GRIUP_ID = 'spark-streaming'
 TOPIC = 'CoinsInfo'
 NO_PARTITION = 12
 
-APP_NAME = 'processing'
+APP_NAME = 'streaming_processing'
 MASTER = config.PROCESSING_CONFIG['PUBLIC_DNS']
 PATH_CHECKPOINT = config.PROCESSING_CONFIG['HDFS']
 
