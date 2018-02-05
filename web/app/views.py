@@ -93,9 +93,9 @@ def get_priceinfo_timeperiod(coinid, start_time, end_time):
 
 
 
-@app.route('/api/correlation/<coinid_a>/<coinid_b>')
+@app.route('/api/correlation/<string:coinid_a>/<string:coinid_b>/')
 def get_corr_coins(coinid_a, coinid_b):
-    no_rows = 5*4
+    no_rows = 1
     query = ("""
         SELECT id_a, id_b, time, corr
         FROM pricecorr
@@ -109,7 +109,7 @@ def get_corr_coins(coinid_a, coinid_b):
     return jsonify(jsonresponse)
 
 
-@app.route('/api/correlation/<coinid_a>/<coinid_b>/<string:start_time>/<string:end_time>/')
+@app.route('/api/correlation/<string:coinid_a>/<string:coinid_b>/<string:start_time>/<string:end_time>/')
 def get_corr_coins_timeperiod(coinid_a, coinid_b, start_time, end_time):
     query = ("""
         SELECT id_a, id_b, time, corr
@@ -128,22 +128,6 @@ def get_corr_coins_timeperiod(coinid_a, coinid_b, start_time, end_time):
                     'corr': x.corr} for x in response]
     return jsonify(jsonresponse)
 
-
-@app.route('/api/correlation/<string:start_time>/<string:end_time>/')
-def get_corr_timeperiod(start_time, end_time):
-    no_rows = 1500
-    query = ("""
-        SELECT id_a, id_b, time, corr
-        FROM pricecorr
-        WHERE time > {Start_Time} AND time < {End_Time}
-        LIMIT {Limit}
-        ALLOW FILTERING;
-    """).format(Start_Time=start_time, End_Time=end_time, Limit=no_rows) \
-        .translate(None, '\n')
-    response = session.execute(query)
-    jsonresponse = [{'id_a': x.id_a, 'id_b': x.id_b, 'time': x.time.isoformat(), \
-                    'corr': x.corr} for x in response]
-    return jsonify(jsonresponse)
 
 
 @app.route('/api/correlation/lastest_matrix')

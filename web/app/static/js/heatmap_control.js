@@ -50,7 +50,7 @@ function draw_heatmap(data) {
     ['0.8', 'rgb(69,117,180)'],
     ['1.0', 'rgb(49,54,149)']
   ];
-  
+
 
   var x_axis = data['tag_list'].slice(0);
   var y_axis = data['tag_list'].slice(0);
@@ -63,4 +63,25 @@ function draw_heatmap(data) {
   }];
 
   Plotly.newPlot('corr_heatmap', heatmap_data, heatmap_layout('Correlation Heatmap'));
+}
+
+
+
+function get_corr(){
+  var coidid_1 = document.getElementById("CoinID_1").value;
+  var coidid_2 = document.getElementById("CoinID_2").value;
+
+  $.ajax({
+    url: "/api/correlation/"+coidid_1+"/"+coidid_2+"/",
+    dataType: "json",
+    timeout: 5000,
+    type: "GET",
+    error: function(data) {
+      console.log("Cannot get corr");
+    },
+    success: function(data) {
+      console.log("Successfully got corr"+data[0]['corr']);
+      document.getElementById("output_corr").value = data[0]['corr'].toFixed(4);
+    }
+  });
 }

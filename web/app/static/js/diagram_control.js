@@ -1,3 +1,13 @@
+function plot_diagram() {
+  var coidid = document.getElementById("CoinID_price").value;
+  update_diagram(coidid);
+  $(function () {
+    setInterval(update_diagram(coidid), 2*000);
+  });
+
+}
+
+
 function update_diagram(coinid) {
   console.log("requesting diagram info");
   $.ajax({

@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Dashboard Template for Bootstrap</title>
+    <title>Decrypt Diversity of Cryptocoins</title>
 
     <!-- Bootstrap core CSS -->
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
@@ -95,15 +95,50 @@
           <h1 class="page-header">Risk Management in Cryptocurrency Market</h1>
 
           <h2 class="sub-header" id="corr_heatmap_head" >Correlation Heatmap</h2>
-          <div class="row placeholders" style="height:30">
+          <div class="row placeholders">
               <div class="row">
                 <div class="col-lg-6 col-lg-offset-3"><div id="corr_heatmap"></div></div>
+              </div>
+
+              <div class= "row placeholders">
+                <h3 class="col-md-4">Correlation Lookup</h3>
+              </div>
+              <div class="row">
+                <div class="col-md-2 offset-md-3">
+                  <label>Coin 1 ID</label>
+                  <input class="form-control" id="CoinID_1" placeholder="bitcoin">
+                  <small id="coind1_hint" class="form-text text-muted">Please input coin id.</small>
+                </div>
+                <div class="col-md-2 offset-md-3">
+                  <label>Coin 2 ID</label>
+                  <input class="form-control" id="CoinID_2" placeholder="bitcoin">
+                  <small id="coind2_hint" class="form-text text-muted">Please input coin id.</small>
+                </div>
+                <div class="col-md-1 offset-md-1">
+                  <br>
+                  <div class="btn btn-primary btn-block" onclick="get_corr()">Lookup</div>
+                </div>
+                <div class="col-md-2 offset-md-1">
+                  <label>Correlation value</label>
+                  <output class="form-control" id="output_corr">
+                </div>
               </div>
           </div>
 
             <!-- Plotly chart will be drawn inside this DIV -->
           <h2 class="sub-header" id="price_chart_head">Price Chart</h2>
           <div class="row placeholders">
+            <div class="row">
+              <div class="col-md-2 col-lg-offset-4">
+                <label>Coin ID</label>
+                <input class="form-control" id="CoinID_price" value="bitcoin">
+                <small id="coind_price_hint" class="form-text text-muted">Please input coin id.</small>
+              </div>
+              <div class="col-md-1 offset-md-1">
+                <br>
+                <div class="btn btn-primary btn-block" onclick="plot_diagram()">Plot</div>
+              </div>
+            </div>
             <div class="row">
               <div id="price_time_series"></div>
             </div>
