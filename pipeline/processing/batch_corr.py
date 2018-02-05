@@ -21,12 +21,13 @@ CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 KEYSPACE = 'cryptcoin'
 TABLE_NAME = 'priceinfo'
 TABLE_NAME_CORR = 'pricecorr'
+TABLE_NAME_CORR_sorted = 'pricecorrsorted'
 
 ID_DICT = id_dict.ID_DICT
 INV_ID_DICT = {int(v): k for k, v in ID_DICT.iteritems()}
 ID_LIST = [ k for k,v in sorted(ID_DICT.items(), key=lambda x:int(x[1])) ]
 
-RECORD_LIMIT = 12 
+RECORD_LIMIT = 12
 TIME_PERIOD = 15*60
 
 
@@ -37,7 +38,6 @@ def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
     return session
 
 
-
 def create_table_corr(session, table_name=TABLE_NAME_CORR):
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
@@ -46,6 +46,18 @@ def create_table_corr(session, table_name=TABLE_NAME_CORR):
             time timestamp,
             corr float,
             PRIMARY KEY ((id_a, id_b), time),
+        ) WITH CLUSTERING ORDER BY (time DESC);
+    """).format(Table_Name = table_name).translate(None, '\n')
+    table_creation_preparation = session.prepare(query)
+    session.execute(table_creation_preparation)
+
+
+def create_table_corr(session, table_name=TABLE_NAME_CORR_sorted):
+    query = ("""
+        CREATE TABLE IF NOT EXISTS {Table_Name} (
+            time timestamp,
+            corr string,
+            PRIMARY KEY (time),
         ) WITH CLUSTERING ORDER BY (time DESC);
     """).format(Table_Name = table_name).translate(None, '\n')
     table_creation_preparation = session.prepare(query)
@@ -74,7 +86,7 @@ def query_priceinfo(session, coinid):
         LIMIT {Record_Limit};
     """).format(Table_Name=table_name, \
                 Id=coinid, Record_Limit=record_limit).translate(None, '\n')
-    
+
     response = session.execute(query)
     return [x.price_usd for x in response]
 

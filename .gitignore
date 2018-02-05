@@ -109,5 +109,7 @@ ENV/
 config.py
 
 id_dict.py
-id_dict.py
+id_info.py
 batch_log.txt
+
+
