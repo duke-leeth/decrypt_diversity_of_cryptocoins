@@ -48,11 +48,12 @@ def get_coinlist():
         response_list.append(val)
 
     BasicInfo_Dict = {}
+    no_variables = 900
     for x in response_list:
         BasicInfo_Dict[x.name] = {"name":x.name, "symbol": x.symbol, "id": x.id, "rank":x.rank}
     jsonresponse = [ v for k,v in sorted(BasicInfo_Dict.items(), key=lambda x:x[1]['rank']) ]
 
-    return jsonify(jsonresponse)
+    return jsonify(jsonresponse[:no_variables])
 
 
 @app.route('/api/priceinfo/<string:coinid>/')

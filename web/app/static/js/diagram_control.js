@@ -30,11 +30,11 @@ function draw_diagram(coinid, data) {
   console.log("plotting price time series");
   var price_array = [];
   var time_array = [];
-  var volumn_array = [];
+  var volume_array = [];
   for (var i = data.length-1; i >= 0; i--) {
     price_array.push(data[i]['price_usd']);
     time_array.push(data[i]['time']);
-    volumn_array.push(data[i]['volume_usd_24h']);
+    volume_array.push(data[i]['volume_usd_24h']);
   }
 
   var trace1 = {
@@ -49,19 +49,19 @@ function draw_diagram(coinid, data) {
   var trace2 = {
     type: "scatter",
     mode: "lines",
-    name: '24hr volumn',
+    name: '24hr volume',
     x: time_array,
-    y: volumn_array,
+    y: volume_array,
     line: {color: '#7F7F7F'}
   }
 
   var price_diagram_data = [trace1];
-  var volumn_diagram_data = [trace2];
+  var volume_diagram_data = [trace2];
 
   Plotly.newPlot('price_time_series', price_diagram_data,
                   diagram_layout(coinid,'time','Price (USD)'));
-  Plotly.newPlot('volumn_time_series', volumn_diagram_data,
-                  diagram_layout(coinid,'time','24h volumn (USD)'));
+  Plotly.newPlot('volume_time_series', volume_diagram_data,
+                  diagram_layout(coinid,'time','24h volume (USD)'));
 }
 
 
