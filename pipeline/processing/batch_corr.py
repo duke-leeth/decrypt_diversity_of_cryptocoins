@@ -18,10 +18,10 @@ import id_dict
 
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
-KEYSPACE = 'cryptcoin'
+KEYSPACE = 'cryptocoins'
 TABLE_NAME = 'priceinfo'
-TABLE_NAME_CORR = 'pricecorr'
-TABLE_NAME_CORR_sorted = 'pricecorrsorted'
+TABLE_NAME_CORR = 'priceinfocorr'
+TABLE_NAME_CORR_sorted = 'priceinfocorrsorted'
 
 ID_DICT = id_dict.ID_DICT
 INV_ID_DICT = {int(v): k for k, v in ID_DICT.iteritems()}
@@ -46,18 +46,6 @@ def create_table_corr(session, table_name=TABLE_NAME_CORR):
             time timestamp,
             corr float,
             PRIMARY KEY ((id_a, id_b), time),
-        ) WITH CLUSTERING ORDER BY (time DESC);
-    """).format(Table_Name = table_name).translate(None, '\n')
-    table_creation_preparation = session.prepare(query)
-    session.execute(table_creation_preparation)
-
-
-def create_table_corr(session, table_name=TABLE_NAME_CORR_sorted):
-    query = ("""
-        CREATE TABLE IF NOT EXISTS {Table_Name} (
-            time timestamp,
-            corr string,
-            PRIMARY KEY (time),
         ) WITH CLUSTERING ORDER BY (time DESC);
     """).format(Table_Name = table_name).translate(None, '\n')
     table_creation_preparation = session.prepare(query)

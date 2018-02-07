@@ -9,10 +9,8 @@ import config
 PUBLIC_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
 API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 
-KEYSPACE = 'cryptcoin'
+KEYSPACE = 'cryptocoins'
 TABLE_NAME = 'basicinfo'
-
-ID_LIST_FILE = 'id_dict.py'
 
 
 def set_keyspace(session, keyspace=KEYSPACE):
@@ -20,10 +18,10 @@ def set_keyspace(session, keyspace=KEYSPACE):
         '{\'class\' : \'SimpleStrategy\', \'replication_factor\' : 3}'
     session.execute( \
         ("""
-        CREATE KEYSPACE IF NOT EXISTS {KeySpace}
-         WITH REPLICATION = {Replication_Setting};
-    """).format(KeySpace = keyspace, \
-                Replication_Setting = replication_setting).translate(None, '\n') \
+            CREATE KEYSPACE IF NOT EXISTS {Keyspace}
+            WITH REPLICATION = {Replication_Setting};
+        """).format(Keyspace = keyspace, Replication_Setting = replication_setting)\
+        .translate(None, '\n') \
     )
     session.set_keyspace(keyspace)
 
@@ -65,17 +63,13 @@ def send_request(session, table_name=TABLE_NAME):
 
     query_cassandra = prepare_insertion(session, table_name)
 
-    id_dict = {} 
+    id_dict = {}
 
     for entry in jsdata:
         id_dict[ entry['id'] ] = entry['rank']
 
         session.execute(query_cassandra, \
                     (entry['id'], entry['name'], entry['symbol'], int(entry['rank'])))
-
-    with open(ID_LIST_FILE, 'w') as fout:
-        fout.write('ID_DICT = ')
-        fout.write(str(id_dict).encode("UTF-8"))
 
 
 

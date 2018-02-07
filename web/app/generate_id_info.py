@@ -6,17 +6,22 @@ import config
 
 
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
-KEYSPACE = 'cryptcoin'
-
-cluster = Cluster([CASSANDRA_DNS])
-session = cluster.connect()
-session.set_keyspace(KEYSPACE)
+KEYSPACE = 'cryptocoins'
+TABLE_NAME = 'basicinfo'
 
 ID_LIST_FILE = 'id_info.py'
 
 
-def get_id_info():
-    query = "SELECT id, rank FROM cryptcoin.basicinfo;"
+def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
+    cluster = Cluster([cassandra_dns])
+    session = cluster.connect()
+    session.set_keyspace(keyspace)
+    return session
+
+
+def get_id_info(session, keyspace=KEYSPACE, table_name=TABLE_NAME):
+    query = ("""SELECT id, rank FROM {Keyspace}.{Table_Name};""")\
+            .format(Keyspace=keyspace , Table_Name = table_name)
     response = session.execute(query)
 
     id_dict = {}
@@ -40,10 +45,9 @@ def get_id_info():
         fout.write('\n\n')
 
 
-
-
 def main(argv=sys.argv):
-    get_id_info()
+    session = connect_to_cassandra(CASSANDRA_DNS, KEYSPACE)
+    get_id_info(session, KEYSPACE, TABLE_NAME)
 
 
 
