@@ -43,11 +43,11 @@ PATH_CHECKPOINT = config.PROCESSING_CONFIG['HDFS']
 
 RECORDS_LIST_NAME = 'records_list'
 
-WINDOW_LENGTH = 1*60
-SLIDE_INTERVAL = 1*60
+WINDOW_LENGTH = 60*60
+SLIDE_INTERVAL = 60*60
 
-WINDOW_LENGTH_CORR = 1*60
-SLIDE_INTERVAL_CORR = 1*60
+WINDOW_LENGTH_CORR = 60*60
+SLIDE_INTERVAL_CORR = 6*60
 
 
 SPARK = SparkSession.builder.appName(APP_NAME).master(MASTER).getOrCreate()
@@ -139,6 +139,7 @@ def to_corr_list(records_list):
     return [ [ entry['price_usd'] ] for entry in records_list ]
 
 
+
 def union(l1, l2):
     corr_matrix = []
 
@@ -148,22 +149,25 @@ def union(l1, l2):
     return corr_matrix
 
 
-def correlation(corr_matrix):
-    """
+def minus(l1, l2): 
+    corr_matrix = []
+    
+    for i in range(len(l1)):
+        corr_matrix.append( l1[i][len(l2)-1:]  )
+    
+    return corr_matrix
 
-        Return: an numpy.ndarray
-    """
-    dataset = [ ]
-    for m_records in corr_matrix:
-        dataset.append( [ Vectors.dense(m_records) ] )
-    dataset = SPARK.createDataFrame(dataset, ['features'])
-    pearsonCorr = Correlation.corr(dataset, 'features', 'pearson')
-    return pearsonCorr.toArray()
+
+def correlation(matrix):
+    corr_matrix = np.corrcoef( np.matrix(matrix) )
+    corr_matrix = np.nan_to_num( corr_matrix ) 
+
+    return corr_matrix
 
 
 def corr_to_db_format(corr_matrix):
     return {'date': time.strftime("%d-%m-%Y"), \
-            'time': int(int(time.time()*1000), \
+            'time': int(time.time()*1000), \
             'corr': str(corr_matrix) }
 
 
@@ -200,24 +204,24 @@ def main(argv=sys.argv):
 
 
     # Compute mean hourly price for each coin via sliding window
-#    hourlyStream = decodedStream\
-#                   .map(sum_and_count)\
-#                   .reduceByKeyAndWindow(addition, subtraction, WINDOW_LENGTH, SLIDE_INTERVAL)
+    hourlyStream = decodedStream\
+                   .map(sum_and_count)\
+                   .reduceByKeyAndWindow(addition, subtraction, WINDOW_LENGTH, SLIDE_INTERVAL)
 
    # Save hourly streaming data to Cassandra
-#    hourlyStream.map(average_price)\
-#                .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_HOURLY))
+    hourlyStream.map(average_price)\
+                .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_HOURLY))
 
 
 
-#    # Compute correlation matrix
-#    corrStream = listDataStream.map(to_corr_list)\
-#                               .reduceByKeyAndWindow(union, WINDOW_LENGTH_CORR, SLIDE_INTERVAL_CORR)
+    # Compute correlation matrix
+    corrStream = listDataStream.map(to_corr_list) \
+                               .reduceByWindow(union, minus, WINDOW_LENGTH_CORR, SLIDE_INTERVAL_CORR)
 
-#    # Save correlation matrix to cassandra
-#    corrStream.map(correlation)\
-#              .map(corr_to_db_format)\
-#              .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_CORR))
+    # Save correlation matrix to cassandra
+    corrStream.map(correlation)\
+              .map(corr_to_db_format)\
+              .foreachRDD(lambda rdd: rdd.saveToCassandra(KEYSPACE, TABLE_NAME_CORR))
 
 
     ssc.start()
