@@ -21,7 +21,7 @@ TOPIC = 'CoinsInfo'
 API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 
 RECORDS_LIST_NAME = 'records_list'
-TIME_PERIOD = 1
+TIME_PERIOD = 0.1
 NO_OF_COINS = 1000
 
 
@@ -111,8 +111,6 @@ def periodic_request(producer, time_period=10):
                 <time_period (sec): float>
         Return: Void
     """
-    if not isinstance(time_period, int):
-        raise ValueError('time_period must be an integer.')
 
     records_list = send_request()
 
@@ -121,7 +119,6 @@ def periodic_request(producer, time_period=10):
 
         # Send to kafka
         producer.send(TOPIC, json.dumps({RECORDS_LIST_NAME:records_list}))
-        producer.flush()
         time.sleep(time_period)
 
 

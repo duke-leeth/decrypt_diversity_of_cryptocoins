@@ -16,5 +16,5 @@ check and see if this topic is seen by other nodes by describing them on another
 Using the following command to start the producer process,
 and store the log message into `producer_log.txt` file
 ```
-nohup python insight_project/pipeline/ingestion/producer.py &>producer_log.txt &
+nohup python insight_project/pipeline/source/producer.py &>producer_log.txt &
 ```
