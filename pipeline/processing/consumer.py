@@ -31,7 +31,7 @@ TABLE_NAME_HOURLY = 'priceinfohourly'
 TABLE_NAME_CORR = 'priceinfocorr'
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
-BATCH_DURATION = 10
+BATCH_DURATION = 5
 
 GRIUP_ID = 'spark-streaming'
 TOPIC = 'CoinsInfo'
@@ -159,7 +159,7 @@ def correlation(matrix):
     corr_matrix = np.corrcoef( np.matrix(matrix) )
     corr_matrix = np.nan_to_num( corr_matrix )
 
-    return corr_matrix
+    return corr_matrix.tolist()
 
 
 def corr_to_db_format(corr_matrix):
@@ -173,7 +173,10 @@ def main(argv=sys.argv):
     # Initialize Spark
     spark = SparkSession.builder.appName(APP_NAME).master(MASTER).getOrCreate()
     sc = spark.sparkContext
-    sc.setLogLevel("WARN")
+
+    # Set log level
+    # sc.setLogLevel("WARN")
+
     sqlContext = SQLContext(sc)
     ssc = StreamingContext(sc, BATCH_DURATION)
 

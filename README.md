@@ -17,9 +17,9 @@ Whenever investors want to reduce the risk by diversifying portfolio, they need 
 
 
 ### Problem Statement
-Given *Time Interval*, *Sampling Rate (Resolution)* and *A set of coins*, return a table of *Price*, *Volumn*, and *Correlation Matrix*. 
+Given *Time Interval*, *Sampling Rate (Resolution)* and *A set of coins*, return a table of *Price*, *Volumn*, and *Correlation Matrix*.
 
-#### Interface 
+#### Interface
 1. Let user to specify *Time Interval*, *Sampling Rate (Resolution)* and *A set of coins*
 2. Visulization of *Price* and *Volumn* information vs *Time Interval* on a diagram
 3. Animate heatmap of *Correlation Matrix* during *Time Interval*.
@@ -36,3 +36,21 @@ Given *Time Interval*, *Sampling Rate (Resolution)* and *A set of coins*, return
 
 ### Proposed Architecture
 ![Proposed Architecture](picture/InsightArchitecture.png)
+
+
+### Dependency
+
+send http requests
+```
+pip install requests
+```
+
+Kafka in python
+```
+pip install kafka-python
+```
+
+Cassandra dirver in python
+```
+pip install cassandra-driver
+```

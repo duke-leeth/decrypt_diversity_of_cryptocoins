@@ -6,7 +6,6 @@ import sys
 import time
 import requests
 import json
-import jsonlines
 import kafka
 import config
 import id_info
@@ -16,7 +15,7 @@ ID_DICT = id_info.ID_DICT
 INV_ID_DICT = id_info.INV_ID_DICT
 ID_LIST = id_info.ID_LIST
 
-PUBLIC_DNS = config.INGESTION_CONFIG['PUBLIC_DNS']
+PUBLIC_DNS = config.INGESTION_CONFIG['KAFKA_PUBLIC_DNS']
 TOPIC = 'CoinsInfo'
 API_URL = config.COIN_SOURCE_CONFIG['API_URL']
 

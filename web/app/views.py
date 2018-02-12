@@ -2,6 +2,7 @@
 #
 # TIME format: rfc3339
 import time
+import ast
 
 from flask import jsonify
 
@@ -14,9 +15,8 @@ import config
 import id_info
 
 
-
 CASSANDRA_DNS = config.STORAGE_CONFIG['PUBLIC_DNS']
-KEYSPACE = 'cryptcoin'
+KEYSPACE = 'cryptocoins'
 
 cluster = Cluster([CASSANDRA_DNS])
 session = cluster.connect()
@@ -41,14 +41,14 @@ def api_index():
 
 @app.route('/api/coinlist/')
 def get_coinlist():
-    query = 'SELECT name, symbol, id, rank FROM cryptcoin.basicinfo;'
+    query = 'SELECT name, symbol, id, rank FROM basicinfo;'
     response = session.execute(query)
     response_list = []
     for val in response:
         response_list.append(val)
 
     BasicInfo_Dict = {}
-    no_variables = 900
+    no_variables = 1000
     for x in response_list:
         BasicInfo_Dict[x.name] = {"name":x.name, "symbol": x.symbol, "id": x.id, "rank":x.rank}
     jsonresponse = [ v for k,v in sorted(BasicInfo_Dict.items(), key=lambda x:x[1]['rank']) ]
@@ -94,41 +94,29 @@ def get_priceinfo_timeperiod(coinid, start_time, end_time):
 
 
 
+
 @app.route('/api/correlation/<string:coinid_a>/<string:coinid_b>/')
 def get_corr_coins(coinid_a, coinid_b):
     no_rows = 1
     query = ("""
-        SELECT id_a, id_b, time, corr
-        FROM pricecorr
-        WHERE id_a='{Coin_Id_A}' AND id_b='{Coin_Id_B}'
+        SELECT date, time, corr
+        FROM priceinfocorr
+        WHERE date='{Date}'
         LIMIT {Limit};
-    """).format(Coin_Id_A=coinid_a, Coin_Id_B=coinid_b, Limit=no_rows).translate(None, '\n')
+    """).format(Date=time.strftime("%d-%m-%Y"), Limit=no_rows).translate(None, '\n')
     response = session.execute(query)
 
-    jsonresponse = [{'id_a': x.id_a, 'id_b': x.id_b, 'time': x.time.isoformat(), \
-                    'corr': x.corr} for x in response]
+    resp_list = [{'time': x.time.isoformat(), \
+                  'corr_matrix': ast.literal_eval(x.corr)} for x in response]
+
+    resp_dict = resp_list[0]
+    resp_dict['corr'] = resp_dict['corr_matrix'][ ID_DICT[coinid_a] ][ ID_DICT0[coinid_b] ]
+
+
+    jsonresponse = [{'time': resp_dict['time'], \
+                    'corr': resp_dict['corr']} ]
+
     return jsonify(jsonresponse)
-
-
-@app.route('/api/correlation/<string:coinid_a>/<string:coinid_b>/<string:start_time>/<string:end_time>/')
-def get_corr_coins_timeperiod(coinid_a, coinid_b, start_time, end_time):
-    query = ("""
-        SELECT id_a, id_b, time, corr
-        FROM pricecorr
-        WHERE id_a='{Coin_Id_A}'
-            AND id_b='{Coin_Id_B}'
-            AND time > {Start_Time}
-            AND time < {End_Time}
-        ALLOW FILTERING;
-    """).format(Coin_Id_A=coinid_a, Coin_Id_B=coinid_b, \
-                Start_Time=start_time, End_Time=end_time) \
-        .translate(None, '\n')
-    response = session.execute(query)
-
-    jsonresponse = [{'id_a': x.id_a, 'id_b': x.id_b, 'time': x.time.isoformat(), \
-                    'corr': x.corr} for x in response]
-    return jsonify(jsonresponse)
-
 
 
 @app.route('/api/correlation/lastest_matrix')
