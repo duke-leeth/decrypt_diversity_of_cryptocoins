@@ -3,7 +3,7 @@
 ## Summary
 A streaming data pipeline to show the correlation matrix (the latest one hour) as heatmap for cryptocoins. This project was built during being as a Data Engineering Fellow at Insight Data Science.
 
-* [Slides](http://www.bit.ly/2ntauKR) 
+* [Slides](http://www.bit.ly/2ntauKR)
 * [Platform](http://www.bit.ly/2s3wlxo)
 
 
@@ -30,6 +30,14 @@ The metric for this case is the correlations between all the investment targets.
 2. Let user to look up *Correlation* (the latest one hour) by specifying *ID* of two coins.
 3. Visualization of *Price* and *Volume* information vs *Time Interval* on a chart.
 4. Let user to change the *Price* and *Volume* by specifying *ID* of a coin.
+
+![heatmap](picture/heatmap.png)
+
+![price_chart](picture/price_chart.png)
+
+![volume_chart](picture/volume_chart.png)
+
+![cois_info](picture/coins_info.png)
 
 
 
