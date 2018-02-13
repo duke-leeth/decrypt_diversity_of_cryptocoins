@@ -41,7 +41,7 @@ def api_index():
 
 @app.route('/api/coinlist/')
 def get_coinlist():
-    query = 'SELECT name, symbol, id, rank FROM basicinfo;'
+    query = 'SELECT name, symbol, id, rank FROM cryptocoins.basicinfo;'
     response = session.execute(query)
     response_list = []
     for val in response:
@@ -110,7 +110,7 @@ def get_corr_coins(coinid_a, coinid_b):
                   'corr_matrix': ast.literal_eval(x.corr)} for x in response]
 
     resp_dict = resp_list[0]
-    resp_dict['corr'] = resp_dict['corr_matrix'][ ID_DICT[coinid_a] ][ ID_DICT0[coinid_b] ]
+    resp_dict['corr'] = resp_dict['corr_matrix'][ ID_DICT[coinid_a] ][ ID_DICT[coinid_b] ]
 
 
     jsonresponse = [{'time': resp_dict['time'], \
@@ -119,42 +119,26 @@ def get_corr_coins(coinid_a, coinid_b):
     return jsonify(jsonresponse)
 
 
+
 @app.route('/api/correlation/lastest_matrix')
 def get_corr_latest():
-    start_time = int(time.time()*1000) - 28*60*1000
-    end_time = int(time.time()*1000)
-
-    no_rows = 1500
+    no_rows = 1
     query = ("""
-        SELECT id_a, id_b, time, corr
-        FROM pricecorr
-        WHERE time > {Start_Time} AND time < {End_Time}
-        LIMIT {Limit}
-        ALLOW FILTERING;
-    """).format(Start_Time=start_time, End_Time=end_time, Limit=no_rows) \
-        .translate(None, '\n')
+        SELECT date, time, corr
+        FROM priceinfocorr
+        WHERE date='{Date}'
+        LIMIT {Limit};
+    """).format(Date=time.strftime("%d-%m-%Y"), Limit=no_rows).translate(None, '\n')
+    response = session.execute(query)
 
-    def query_each(id_a, id_b):
-        query = ("""
-            SELECT id_a, id_b, time, corr
-            FROM pricecorr
-            WHERE id_a='{Id_A}' AND id_b='{Id_B}'
-            LIMIT {Limit}
-            ALLOW FILTERING;
-        """).format(Id_A=id_a, Id_B=id_b, Limit=1).translate(None, '\n')
+    resp_list = [{'time': x.time.isoformat(), \
+                  'corr_matrix': ast.literal_eval(x.corr)} for x in response]
 
-        response = session.execute(query)
-        jsdata_array = [{'id_a': x.id_a, 'id_b': x.id_b, 'time': x.time.isoformat(), \
-                        'corr': x.corr} for x in response]
-        return jsdata_array[0]
+    resp_dict = resp_list[0]
+    resp_dict['corr'] = [ row[ :10] for row in resp_dict['corr_matrix'][ :10] ]
 
 
-    no_of_variable = 10
-    corr_matrix = [ [0 for i in range(no_of_variable)] for i in range(no_of_variable) ]
+    jsonresponse = [{'time': resp_dict['time'], \
+                    'corr': resp_dict['corr']} ]
 
-    for i in range(len(ID_LIST[:no_of_variable])):
-        for j in range(len(ID_LIST[:no_of_variable])):
-            corr_matrix[i][j] = query_each(ID_LIST[i], ID_LIST[j])['corr']
-
-    jsonresponse = {'corr_matrix': corr_matrix, 'tag_list': ID_LIST[:no_of_variable]}
     return jsonify(jsonresponse)

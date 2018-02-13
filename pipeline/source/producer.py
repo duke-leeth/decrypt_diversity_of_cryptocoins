@@ -6,7 +6,6 @@ import sys
 import time
 import requests
 import json
-import jsonlines
 import kafka
 import config
 import id_info
