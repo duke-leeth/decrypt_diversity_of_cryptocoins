@@ -3,8 +3,8 @@
 ## Summary
 A pipeline to show the correlation matrix (the latest one hour) as heatmap for streaming cryptocoins data. This project was built during being as a Data Engineering Fellow at Insight Data Science.
 
-* Web service URL: [decrypt-diversity-of-cryptocoins.site/](http://decrypt-diversity-of-cryptocoins.site/)
-* Slides URL: [decrypt-diversity-of-cryptocoins.site/slides](http://decrypt-diversity-of-cryptocoins.site/slides)
+* [Web service](http://decrypt-diversity-of-cryptocoins.site/) URL: decrypt-diversity-of-cryptocoins.site
+* [Slides](http://decrypt-diversity-of-cryptocoins.site/slides) URL: decrypt-diversity-of-cryptocoins.site/slides
 
 
 ## Project idea in 1-sentence
