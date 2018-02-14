@@ -38,9 +38,9 @@ def cast_to_float(var):
 
 def send_request(producer):
     """ Sends a http API request to get the realtime data,
-        cleans it, and sends it to Kafka
+        cleans it, and sends it to kafka
 
-        Args:   <producer: producer object from kafka.KafkaProducer>
+        Args:   <producer: producer object of class kafka.KafkaProducer>
         Return: Void
     """
 
@@ -96,9 +96,9 @@ def send_request(producer):
 
 
 def periodic_request(producer, time_period=10):
-    """ Periodically executes API request and sends the clean data to Kafka
+    """ Periodically executes API request and sends the clean data to kafka
 
-        Args:   <producer: producer object from kafka.KafkaProducer>
+        Args:   <producer: producer object of class kafka.KafkaProducer>
                 <time_period (sec): float>
         Return: Void
     """
@@ -112,7 +112,7 @@ def periodic_request(producer, time_period=10):
 
 
 def main(argv=sys.argv):
-    """ Produce data to the pipline
+    """ Produce data to the kafka
 
         Return: Void
     """

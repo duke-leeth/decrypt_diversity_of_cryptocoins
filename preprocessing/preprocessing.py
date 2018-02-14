@@ -14,6 +14,12 @@ TABLE_NAME = 'basicinfo'
 
 
 def set_keyspace(session, keyspace=KEYSPACE):
+    """ Create or set the keyspace for a session object
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <keyspace: String>
+        Return: Void
+    """
     replication_setting = \
         '{\'class\' : \'SimpleStrategy\', \'replication_factor\' : 3}'
     session.execute( \
@@ -27,6 +33,12 @@ def set_keyspace(session, keyspace=KEYSPACE):
 
 
 def create_table(session, table_name=TABLE_NAME):
+    """ Create a table for basic coins information
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: Void
+    """
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
             id text,
@@ -41,6 +53,12 @@ def create_table(session, table_name=TABLE_NAME):
 
 
 def prepare_insertion(session, table_name=TABLE_NAME):
+    """ Return a query object for cassandra insertion preparation
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: <an object of class cassandra.query.PreparedStatement>
+    """
     query = ("""
         INSERT INTO {Table_Name} (
             id,
@@ -53,6 +71,13 @@ def prepare_insertion(session, table_name=TABLE_NAME):
 
 
 def send_request(session, table_name=TABLE_NAME):
+    """ Send an API request to get basic information of all coins,
+        and save them into cassandra
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: Void
+    """
     while True:
         try:
             req = requests.get(API_URL)
@@ -74,6 +99,10 @@ def send_request(session, table_name=TABLE_NAME):
 
 
 def main(argv=sys.argv):
+    """ Get basic information of all coins and insert them into Cassandra
+
+        Return: Void
+    """
     cluster = Cluster([PUBLIC_DNS])
     session = cluster.connect()
     set_keyspace(session, KEYSPACE)

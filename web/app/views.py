@@ -5,7 +5,7 @@ import time
 import ast
 
 from flask import jsonify
-
+from flask import redirect
 from flask import render_template
 from app import app
 
@@ -31,16 +31,29 @@ ID_LIST = id_info.ID_LIST
 @app.route('/')
 @app.route('/index')
 def index():
+    """ Render index webpage """
+
     return render_template('index.html')
 
 
 @app.route('/api/')
 def api_index():
+    """ Render api_index webpage """
+
     return render_template('api_index.html', title='API')
+
+
+@app.route('/slides')
+def redirect_to_slides():
+    """ Redirect to Google slides of this project """
+
+    return redirect("http://www.bit.ly/2ntauKR", code=302)
 
 
 @app.route('/api/coinlist/')
 def get_coinlist():
+    """ Return an array containing basic information of all coins """
+
     query = 'SELECT name, symbol, id, rank FROM cryptocoins.basicinfo;'
     response = session.execute(query)
     response_list = []
@@ -58,6 +71,8 @@ def get_coinlist():
 
 @app.route('/api/priceinfo/<string:coinid>/')
 def get_priceinfo(coinid):
+    """ Return an array of price information given the coin ID in the past 24hr """
+
     no_rows = 25*12
     query = ("""
         SELECT id, time, price_usd, volume_usd_24h
@@ -74,6 +89,8 @@ def get_priceinfo(coinid):
 
 @app.route('/api/priceinfo/<string:coinid>/<string:start_time>/<string:end_time>/')
 def get_priceinfo_timeperiod(coinid, start_time, end_time):
+    """ Return an array of price information given the coin ID, and the time interval """
+
     query = ("""
         SELECT id, time, price_usd, volume_usd_24h
         FROM priceinfo
@@ -97,6 +114,8 @@ def get_priceinfo_timeperiod(coinid, start_time, end_time):
 
 @app.route('/api/correlation/<string:coinid_a>/<string:coinid_b>/')
 def get_corr_coins(coinid_a, coinid_b):
+    """ Return the latest correlation given the two coin IDs """
+
     no_rows = 1
     query = ("""
         SELECT date, time, corr
@@ -120,8 +139,10 @@ def get_corr_coins(coinid_a, coinid_b):
 
 
 
-@app.route('/api/correlation/lastest_matrix')
+@app.route('/api/correlation/latest_matrix')
 def get_corr_latest():
+    """ Return the latest correlation matrix for coins having top 10 market values """
+
     no_rows = 1
     query = ("""
         SELECT date, time, corr

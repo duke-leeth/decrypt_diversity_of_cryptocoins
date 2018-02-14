@@ -1,14 +1,15 @@
 # Decrypt Diversity of Cryptocoins
 
 ## Summary
-A streaming data pipeline to show the correlation matrix (the latest one hour) as heatmap for cryptocoins. This project was built during being as a Data Engineering Fellow at Insight Data Science.
+A pipeline to show the correlation matrix (the latest one hour) as heatmap for streaming cryptocoins data. This project was built during being as a Data Engineering Fellow at Insight Data Science.
 
-* [Slides](http://www.bit.ly/2ntauKR)
-* [Platform](http://www.bit.ly/2s3wlxo)
+* Web service URL: [decrypt-diversity-of-cryptocoins.site/](http://decrypt-diversity-of-cryptocoins.site/)
+* Slides URL: [decrypt-diversity-of-cryptocoins.site/slides](decrypt-diversity-of-cryptocoins.site/slides)
 
 
 ## Project idea in 1-sentence
-To provide a real-time risk management system in cryptocurrency market.
+To provide a real-time information platform for  risk management system in cryptocurrency market.
+
 
 ## Purpose and Use cases
 ### Purpose
@@ -17,7 +18,7 @@ Otherwise, they may become either very rich, or very poor. For example, someone 
 
 The metric for this case is the correlations between all the investment targets. However, unlike the stock market, in which all the correlations have been well studied, correlations between different cryptocoins haven't been well understood yet. Moreover, correlations may change in different time period. As a result, to meet this desire, I decided to build this platform.
 
-#### Use cases
+### Use cases
 1. A Tool for data scientists to acquire cryptocoins historical data.
 2. An information provider system for real-time portfolio management system.
 3. A web API, which returns a list of json objects with all the information, including price, volume, and correlations.

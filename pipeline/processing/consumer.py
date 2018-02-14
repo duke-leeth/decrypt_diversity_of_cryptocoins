@@ -31,7 +31,7 @@ TABLE_NAME_HOURLY = 'priceinfohourly'
 TABLE_NAME_CORR = 'priceinfocorr'
 
 ZK_DNS = config.INGESTION_CONFIG['ZK_PUBLIC_DNS']
-BATCH_DURATION = 5
+BATCH_DURATION = 10
 
 GRIUP_ID = 'spark-streaming'
 TOPIC = 'CoinsInfo'
@@ -44,13 +44,19 @@ PATH_CHECKPOINT = config.PROCESSING_CONFIG['HDFS']
 RECORDS_LIST_NAME = 'records_list'
 
 WINDOW_LENGTH = 60*60
-SLIDE_INTERVAL = 60*60
+SLIDE_INTERVAL = 10
 
 WINDOW_LENGTH_CORR = 60*60
-SLIDE_INTERVAL_CORR = 6*60
+SLIDE_INTERVAL_CORR = 10
 
 
 def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
+    """ Connect to cassandra given keyspace
+
+        Args:   <cassandra_dns: String>
+                <keyspace: String>
+        Return: <an object of class cassandra.cluster.Session>
+    """
     cluster = Cluster([cassandra_dns])
     session = cluster.connect()
     session.set_keyspace(keyspace)
@@ -58,6 +64,12 @@ def connect_to_cassandra(cassandra_dns=CASSANDRA_DNS, keyspace=KEYSPACE):
 
 
 def create_table(session, table_name=TABLE_NAME):
+    """ Create a table for price information
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: Void
+    """
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
             id text,
@@ -80,6 +92,12 @@ def create_table(session, table_name=TABLE_NAME):
 
 
 def create_table_hourly(session, table_name=TABLE_NAME_HOURLY):
+    """ Create a table for hourly price information
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: Void
+    """
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
             id text,
@@ -94,6 +112,12 @@ def create_table_hourly(session, table_name=TABLE_NAME_HOURLY):
 
 
 def create_table_corr(session, table_name=TABLE_NAME_CORR):
+    """ Create a table for correlation matrix
+
+        Args:   <session: an object of class cassandra.cluster.Session>
+                <table_name: String>
+        Return: Void
+    """
     query = ("""
         CREATE TABLE IF NOT EXISTS {Table_Name} (
             date text,
@@ -107,6 +131,12 @@ def create_table_corr(session, table_name=TABLE_NAME_CORR):
 
 
 def sum_and_count(entry):
+    """ Transform an entry into a (key, value) pair,
+        with id as key, and a dictionary which contains price info as value
+
+        Args:   <entry: Dictionary>
+        Return: <an object of class Tuple>
+    """
     return ( entry['id'], \
              {'count': 1, \
               'price_usd': entry['price_usd'], \
@@ -114,18 +144,35 @@ def sum_and_count(entry):
 
 
 def addition(v1, v2):
+    """ Add price_usd and price_btc from v1 dictionary by v2 dictionary
+
+        Args:   <v1: an object of class Dictionary>
+                <v2: an object of class Dictionary>
+        Return: <an object of class Dictionary>
+    """
     return {'count': v1['count'] + v2['count'], \
             'price_usd': v1['price_usd'] + v2['price_usd'], \
             'price_btc': v1['price_btc'] + v2['price_btc'] }
 
 
 def subtraction(v1, v2):
+    """ Subtract price_usd and price_btc from v1 dictionary by v2 dictionary
+
+        Args:   <v1: an object of class Dictionary>
+                <v2: an object of class Dictionary>
+        Return: <an object of class Dictionary>
+    """
     return {'count': v1['count'] - v2['count'], \
             'price_usd': v1['price_usd'] - v2['price_usd'], \
             'price_btc': v1['price_btc'] - v2['price_btc'] }
 
 
-def average_price((key, value)): \
+def average_price((key, value)):
+    """ Compute the average price for all (key, value) pair
+
+        Args:   <(key,value): Tuple>
+        Return: <an object of class Dictionary>
+    """
     return {'id': key, \
             'time': int(time.time()*1000), \
             'price_usd': value['price_usd']/value['count'], \
@@ -133,11 +180,21 @@ def average_price((key, value)): \
 
 
 def to_corr_list(records_list):
+    """ Transform a records_list into 2D list
+
+        Args:   <records_list: an object of List>
+        Return: <an object of List>
+    """
     return [ [ entry['price_usd'] ] for entry in records_list ]
 
 
-
 def union(l1, l2):
+    """ Combine l1 and l2 lists into a 2D matrix
+
+        Args:   <l1: an object of class List (2D)>
+                <l2: an object of class List (2D)>
+        Return: <an object of List (2D)>
+    """
     corr_matrix = []
 
     for s1,s2 in zip(l1,l2):
@@ -147,6 +204,12 @@ def union(l1, l2):
 
 
 def minus(l1, l2):
+    """ Remove  l2 list from l1 list, and return a 2D matrix
+
+        Args:   <l1: an object of class List (2D)>
+                <l2: an object of class List (2D)>
+        Return: <an object of List (2D)>
+    """
     corr_matrix = []
 
     for i in range(len(l1)):
@@ -156,6 +219,11 @@ def minus(l1, l2):
 
 
 def correlation(matrix):
+    """ Compute the correlation matrix
+
+        Args:   <matrix: an object of class List (2D)>
+        Return: <an object of List (2D)>
+    """
     corr_matrix = np.corrcoef( np.matrix(matrix) )
     corr_matrix = np.nan_to_num( corr_matrix )
 
@@ -163,12 +231,23 @@ def correlation(matrix):
 
 
 def corr_to_db_format(corr_matrix):
+    """ Transform the correlation matrix into a format that can be insert into cassandra
+
+        Args:   <corr_matrix: an object of class List (2D)>
+        Return: <an object of Dictionary>
+    """
     return {'date': time.strftime("%d-%m-%Y"), \
             'time': int(time.time()*1000), \
             'corr': str(corr_matrix) }
 
 
 def main(argv=sys.argv):
+    """ Use spark streaming to receive data from kafka,
+        compute the hourly mean price, correlation Matrix
+        , and store all the result into cassandra database
+
+        Return: Void
+    """
 
     # Initialize Spark
     spark = SparkSession.builder.appName(APP_NAME).master(MASTER).getOrCreate()

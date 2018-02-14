@@ -40,6 +40,7 @@ def cast_to_float(var):
 def send_request():
     """ Sends a http API request to get the realtime data,
         cleans it, and sends it to Kafka
+
         Return: Void
     """
 
@@ -94,6 +95,13 @@ def send_request():
 
 
 def simulate_data_and_send(records_list):
+    """ Simulate price data via a normal distribution random generator, which
+        set the previous price as mean, and the relative percentage as the standard deviation,
+        and send them to kafka
+
+        Args:   <records_list: an object of List>
+        Return: <an object of List>
+    """
     percent = random.uniform(0.0, 0.20)
 
     for i in range(len(records_list)):
@@ -106,11 +114,10 @@ def simulate_data_and_send(records_list):
 def periodic_request(producer, time_period=10):
     """ Periodically executes API request and sends the clean data to Kafka
 
-        Args:   <producer: producer object from kafka.KafkaProducer>
+        Args:   <producer: producer object of class kafka.KafkaProducer>
                 <time_period (sec): float>
         Return: Void
     """
-
     records_list = send_request()
 
     while True:
@@ -122,7 +129,7 @@ def periodic_request(producer, time_period=10):
 
 
 def main(argv=sys.argv):
-    """ Produce data to the pipline
+    """ Produce simulated data to the kafka for stress test
 
         Return: Void
     """
