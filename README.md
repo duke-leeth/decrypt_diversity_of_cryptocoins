@@ -44,10 +44,10 @@ The metric for this case is the correlations between all the investment targets.
 
 ## Architecture
 ### Technologies
-* Kafka
-* Spark Streaming
-* Cassandra
-* Flask
+* Kafka (3 nodes)
+* Spark Streaming (4 nodes)
+* Cassandra (3 nodes)
+* Flask (1 node)
 
 ### ETL Data Pipeline
 ![ETL data pipeline](picture/InsightArchitecture.png)
@@ -55,8 +55,8 @@ The metric for this case is the correlations between all the investment targets.
 
 
 ## Scalability
-This data pipeline can scale up to 100x
-Specs:
+This data pipeline can scale up to 100x, which means it can handle the following:
+
 * Scalability: 100x
 * 1 record / 100ms
 * 2.6 MB/sec
@@ -66,18 +66,28 @@ Specs:
 
 
 ## Dependency
-### Python library
+### Python libraries
 * send http requests
 ```
 pip install requests
 ```
 
-* Kafka in python
+* Kafka
 ```
 pip install kafka-python
 ```
 
-* Cassandra dirver in python
+* Cassandra driver
 ```
 pip install cassandra-driver
+```
+
+* Flask
+```
+pip install flask
+```
+
+* Tornado
+```
+pip install tornado
 ```

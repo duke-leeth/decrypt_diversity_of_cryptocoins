@@ -1,16 +1,16 @@
 # Source
 
-
 ## Create topic
-ssh into master node, create topic via the following command,
+1. ssh into master node, create topic via the following command,
 ```
 /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3 --partitions 12 --topic CoinsInfo
 ```
 
-check and see if this topic is seen by other nodes by describing them on another node,
+2. Check and see if this topic is seen by other nodes by describing them on another node,
 ```
 /usr/local/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic CoinsInfo
 ```
+
 
 ## Start producer process
 Using the following command to start the producer process,
