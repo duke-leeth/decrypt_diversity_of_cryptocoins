@@ -1,7 +1,7 @@
 # Decrypt Diversity of Cryptocoins
 
 ## Summary
-A pipeline to show the correlation matrix (the latest one hour) as heatmap for streaming cryptocoins data. This project was built during being as a Data Engineering Fellow at Insight Data Science.
+A pipeline to show the quasi-realtime correlation matrix (the latest one hour) as heatmap for streaming cryptocoins data. This project was built during being as a Data Engineering Fellow at Insight Data Science.
 
 * [Web service](http://decrypt-diversity-of-cryptocoins.site/) URL: decrypt-diversity-of-cryptocoins.site
 
@@ -10,8 +10,10 @@ A pipeline to show the correlation matrix (the latest one hour) as heatmap for s
 * [Video](https://youtu.be/i88-irpwyLM) URL: youtu.be/i88-irpwyLM
 
 
+
 ## Project idea in 1-sentence
-To provide a real-time information platform for  risk management system in cryptocurrency market.
+To provide a quasi-realtime information platform for risk management system in cryptocurrency market.
+
 
 
 ## Purpose and Use cases
@@ -30,10 +32,10 @@ The metric for this case is the correlations between all the investment targets.
 
 ## Web service
 ### Interface
-1. Show the *Correlation Matrix* as heatmap for 10 cryptocoins which have the top 10 market value.
-2. Let user to look up *Correlation* (the latest one hour) by specifying *ID* of two coins.
-3. Visualization of *Price* and *Volume* information vs *Time Interval* on a chart.
-4. Let user to change the *Price* and *Volume* by specifying *ID* of a coin.
+1. Show the **Correlation Matrix** as heatmap for 10 cryptocoins which have the top 10 market value.
+2. Let user to look up **Correlation** (the latest one hour) by specifying **ID** of two coins.
+3. Visualization of **Price** and **Volume** information vs **Time Interval** on a chart.
+4. Let user to change the **Price** and **Volume** by specifying **ID** of a coin.
 
 ![heatmap](picture/heatmap.png)
 
@@ -52,8 +54,17 @@ The metric for this case is the correlations between all the investment targets.
 * Cassandra (3 nodes)
 * Flask (1 node)
 
+**Note:** Kafka, Spark Streaming, and Cassandra are all distributed systems.
+
+
 ### ETL Data Pipeline
 ![ETL data pipeline](picture/InsightArchitecture.png)
+
+
+### Instance Specs
+* 11 nodes in total
+* Amazon Web Services (AWS)
+* Amazon Elastic Compute Cloud (Amazon EC2) m4.large
 
 
 
