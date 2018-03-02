@@ -3,9 +3,9 @@
 ## Summary
 A pipeline to show the quasi-realtime correlation matrix (the latest one hour) as heatmap for streaming cryptocoins data. This project was built during being as a Data Engineering Fellow at Insight Data Science.
 
-* [Web service](http://youtu.be/uiqITDmj5Jc) URL: youtu.be/uiqITDmj5Jc
+* [Web service](http://youtu.be/uiqITDmj5Jc) URL: decrypt-diversity-of-cryptocoins.site
 
-* [Slides](http://goo.gl/jEZFXK) URL: goo.gl/jEZFXK
+* [Slides](http://goo.gl/jEZFXK) URL: slides.decrypt-diversity-of-cryptocoins.site
 
 * [Video](http://youtu.be/uiqITDmj5Jc) URL: youtu.be/uiqITDmj5Jc
 
